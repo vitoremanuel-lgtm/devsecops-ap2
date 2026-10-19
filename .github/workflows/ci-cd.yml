@@ -1,0 +1,96 @@
+name: CI/CD Seguro - TechSecure
+
+# Dispara automaticamente a cada push ou pull request
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ---------- BUILD + TESTE ----------
+  build-test:
+    name: Build e Testes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias (Build)
+        run: npm install
+
+      - name: Executar testes automatizados
+        run: npm test
+
+  # ---------- ANALISE DE SEGURANCA ----------
+  security-scan:
+    name: Analise de Seguranca
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - name: Checkout do codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias
+        run: npm install
+
+      # SCA - analise de dependencias
+      - name: npm audit (dependencias)
+        run: npm audit --audit-level=high || true
+
+      # Trivy - analise de vulnerabilidades no codigo/filesystem
+      - name: Trivy - scan do filesystem
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          output: 'trivy-report.txt'
+
+      - name: Publicar relatorio Trivy como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-trivy
+          path: trivy-report.txt
+
+  # ---------- BUILD DA IMAGEM + DEPLOY ----------
+  build-deploy:
+    name: Build da Imagem e Deploy
+    runs-on: ubuntu-latest
+    needs: security-scan
+    steps:
+      - name: Checkout do codigo
+        uses: actions/checkout@v4
+
+      - name: Build da imagem Docker
+        run: docker build -t techsecure-app:latest .
+
+      # Trivy tambem escaneia a imagem gerada
+      - name: Trivy - scan da imagem Docker
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'techsecure-app:latest'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Deploy automatico (subir container)
+        run: |
+          docker rm -f techsecure-app || true
+          docker run -d --name techsecure-app -p 3000:3000 techsecure-app:latest
+          sleep 5
+          docker ps
+
+      - name: Validar aplicacao no ar (smoke test)
+        run: |
+          curl -f http://localhost:3000/health

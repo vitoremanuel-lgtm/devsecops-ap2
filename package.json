@@ -1,0 +1,19 @@
+{
+  "name": "techsecure-app",
+  "version": "1.0.0",
+  "description": "Aplicacao de PoC para esteira CI/CD segura - AP II DevSecOps",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "jest --coverage"
+  },
+  "author": "Grupo TechSecure Solutions",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  }
+}

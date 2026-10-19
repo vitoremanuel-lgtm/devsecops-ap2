@@ -1,0 +1,23 @@
+AP II - DevSecOps | Projeto Pratico: Esteira CI/CD Segura
+=========================================================
+
+Disciplina: DevSecOps
+Cenario proposto no enunciado: empresa ficticia TechSecure Solutions
+(nos somos o grupo que desenvolveu a solucao para esse cenario).
+
+Integrantes do grupo:
+- Vitor Emanuel Santiago - RA 2501093
+- Rafael Neves - RA 2503380
+- Guilherme Lopes - RA 2502595
+- Viniccius Cezario - RA 2504060
+
+ENTREGAVEIS
+-----------
+1. Trabalho escrito .............. AP_II_DevSecOps_TechSecure.docx
+2. Repositorio (link) ............ https://github.com/vitoremanuel-lgtm/devsecops-ap2
+3. Video demonstrativo ........... AP_II_DevSecOps_Screencast.mp4
+4. Evidencias (prints) ........... pasta evidencias\
+5. Apresentacao (15 min) ......... AP_II_DevSecOps_Apresentacao.pptx
+
+OBS: o repositorio esta PRIVADO - convidar o professor como colaborador
+     ou torna-lo publico antes da entrega.

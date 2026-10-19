@@ -21,7 +21,7 @@ rs.font.size = Pt(15)
 
 st = doc.add_paragraph()
 st.alignment = WD_ALIGN_PARAGRAPH.CENTER
-rst = st.add_run('Empresa fictícia: TechSecure Solutions')
+rst = st.add_run('Cenário proposto no enunciado: empresa fictícia TechSecure Solutions')
 rst.italic = True
 rst.font.size = Pt(13)
 

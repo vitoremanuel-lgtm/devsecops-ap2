@@ -1,8 +1,14 @@
-# TechSecure Solutions — Esteira CI/CD Segura (AP II DevSecOps)
+# AP II DevSecOps — Esteira CI/CD Segura
 
-Prova de conceito de uma esteira **CI/CD com práticas de DevSecOps**: uma aplicação
-simples em container, com integração e deploy automatizados e etapa de análise de
-segurança integrada ao pipeline.
+Projeto prático da disciplina de DevSecOps. Prova de conceito de uma esteira
+**CI/CD com práticas de DevSecOps**: uma aplicação simples em container, com
+integração e deploy automatizados e etapa de análise de segurança integrada ao pipeline.
+
+**Cenário (proposto no enunciado):** a empresa fictícia *TechSecure Solutions* quer
+reduzir erros de implantação e incorporar segurança ao ciclo de desenvolvimento.
+
+**Integrantes:** Vitor Emanuel Santiago (RA 2501093) · Rafael Neves (RA 2503380) ·
+Guilherme Lopes (RA 2502595) · Viniccius Cezario (RA 2504060)
 
 ## Fluxo da esteira
 

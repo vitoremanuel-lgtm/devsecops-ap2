@@ -80,7 +80,7 @@ txt(s, Inches(1), Inches(2.1), Inches(11.3), Inches(1.2),
 txt(s, Inches(1), Inches(3.3), Inches(11.3), Inches(0.8),
     'Construção de uma Esteira CI/CD Segura', size=26, color=CYAN, align=PP_ALIGN.CENTER)
 txt(s, Inches(1), Inches(4.1), Inches(11.3), Inches(0.6),
-    'Empresa fictícia: TechSecure Solutions', size=18, color=GREY, align=PP_ALIGN.CENTER)
+    'Cenário proposto no enunciado: empresa fictícia TechSecure Solutions', size=18, color=GREY, align=PP_ALIGN.CENTER)
 txt(s, Inches(1), Inches(5.5), Inches(11.3), Inches(1.3),
     'Vitor Emanuel Santiago (RA 2501093)   •   Rafael Neves (RA 2503380)\n'
     'Guilherme Lopes (RA 2502595)   •   Viniccius Cezario (RA 2504060)',

@@ -4,3 +4,5 @@ coverage/
 .env
 
 docs/video_frames/
+
+docs/sc_frames2/

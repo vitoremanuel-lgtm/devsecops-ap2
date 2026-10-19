@@ -7,7 +7,7 @@
     "start": "node src/server.js",
     "test": "jest --coverage"
   },
-  "author": "Grupo TechSecure Solutions",
+  "author": "Vitor Emanuel Santiago, Rafael Neves, Guilherme Lopes, Viniccius Cezario",
   "license": "MIT",
   "dependencies": {
     "express": "^4.19.2"

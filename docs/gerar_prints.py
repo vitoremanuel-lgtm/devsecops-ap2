@@ -13,35 +13,57 @@ def load_font(size):
             return ImageFont.truetype(path, size)
     return ImageFont.load_default()
 
-FONT = load_font(15)
-FONT_B = load_font(15)
-TITLE_FONT = load_font(16)
+def ui_font(size):
+    p = r'C:\Windows\Fonts\segoeui.ttf'
+    return ImageFont.truetype(p, size) if os.path.exists(p) else ImageFont.load_default()
 
-BG = (13, 17, 23)        # fundo escuro estilo GitHub
-FG = (201, 209, 217)
-GREEN = (63, 185, 80)
-RED = (248, 81, 73)
-YELLOW = (210, 153, 34)
-CYAN = (121, 192, 255)
-BAR = (33, 38, 45)
+FONT = load_font(16)
+TITLE_FONT = ui_font(17)
+_tmp = Image.new('RGB', (10, 10))
+CW = ImageDraw.Draw(_tmp).textlength('M', font=FONT)
+
+# paleta do GNOME Terminal do Ubuntu (igual ao video)
+BG = (48, 10, 36)        # #300A24 - aubergine
+FG = (235, 235, 235)
+GREEN = (115, 210, 90)
+RED = (239, 85, 85)
+YELLOW = (233, 205, 90)
+CYAN = (138, 226, 52)    # verde-limao do prompt/comandos no Ubuntu
+BAR = (47, 47, 47)       # headerbar Yaru
+
+def _mono(d, x, y, text, color, lh):
+    for ch in text:
+        if ch in '✓v' and False:
+            pass
+        if ch == '✓':
+            d.line([(x+CW*0.18, y+lh*0.52), (x+CW*0.42, y+lh*0.74), (x+CW*0.86, y+lh*0.26)],
+                   fill=color, width=3, joint='curve')
+        else:
+            d.text((x, y), ch, font=FONT, fill=color)
+        x += CW
+    return x
 
 def render(filename, title, lines):
-    pad = 16
-    lh = 21
-    header_h = 40
-    width = 1100
-    height = header_h + pad*2 + lh*len(lines) + 10
+    pad = 18
+    lh = 24
+    header_h = 48
+    width = 1180
+    height = header_h + pad*2 + lh*len(lines) + 12
     img = Image.new('RGB', (width, height), BG)
     d = ImageDraw.Draw(img)
-    # barra superior
+    # headerbar estilo GNOME Terminal (Yaru)
     d.rectangle([0, 0, width, header_h], fill=BAR)
-    # tres bolinhas estilo janela
-    for i, c in enumerate([(255,95,86),(255,189,46),(39,201,63)]):
-        d.ellipse([14+i*22, 14, 26+i*22, 26], fill=c)
-    d.text((100, 11), title, font=TITLE_FONT, fill=FG)
+    tw = d.textlength(title, font=TITLE_FONT)
+    d.text(((width-tw)/2, 14), title, font=TITLE_FONT, fill=(220, 220, 220))
+    # botoes de janela (minimizar, maximizar, fechar)
+    cy = header_h // 2
+    d.line([width-128, cy, width-114, cy], fill=(205,205,205), width=2)
+    d.rectangle([width-96, cy-7, width-82, cy+7], outline=(205,205,205), width=2)
+    d.line([width-62, cy-7, width-48, cy+7], fill=(225,225,225), width=2)
+    d.line([width-62, cy+7, width-48, cy-7], fill=(225,225,225), width=2)
     y = header_h + pad
     for text, color in lines:
-        d.text((pad, y), text, font=FONT, fill=color)
+        _mono(d, pad, y, text, color, lh)
         y += lh
     path = os.path.join(OUT, filename)
     img.save(path)
@@ -61,9 +83,9 @@ render('01_pipeline_geral.png',
     L('  Triggered via push  -  branch main', FG),
     L(''),
     L('JOBS', YELLOW),
-    L('  v Build e Testes ................ in 20s', GREEN),
-    L('  v Analise de Seguranca ......... in 40s', GREEN),
-    L('  v Build da Imagem e Deploy ..... in 42s', GREEN),
+    L('  ✓ Build e Testes ................ in 20s', GREEN),
+    L('  ✓ Analise de Seguranca ......... in 40s', GREEN),
+    L('  ✓ Build da Imagem e Deploy ..... in 42s', GREEN),
     L(''),
     L('ARTIFACTS', YELLOW),
     L('  relatorio-trivy', FG),
@@ -81,11 +103,11 @@ render('02_build_testes.png',
     L(''),
     L('PASS test/app.test.js', GREEN),
     L('  TechSecure API', FG),
-    L('    v GET / retorna status online (37 ms)', GREEN),
-    L('    v GET /health retorna ok (9 ms)', GREEN),
-    L('    v GET /tarefas retorna uma lista (4 ms)', GREEN),
-    L('    v POST /tarefas cria uma tarefa valida (9 ms)', GREEN),
-    L('    v POST /tarefas rejeita payload invalido (3 ms)', GREEN),
+    L('    ✓ GET / retorna status online (37 ms)', GREEN),
+    L('    ✓ GET /health retorna ok (9 ms)', GREEN),
+    L('    ✓ GET /tarefas retorna uma lista (4 ms)', GREEN),
+    L('    ✓ POST /tarefas cria uma tarefa valida (9 ms)', GREEN),
+    L('    ✓ POST /tarefas rejeita payload invalido (3 ms)', GREEN),
     L(''),
     L('----------|---------|----------|---------|---------|', FG),
     L('File      | % Stmts | % Branch | % Funcs | % Lines |', FG),

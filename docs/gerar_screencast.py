@@ -10,19 +10,21 @@ if os.path.exists(FRAMES):
 os.makedirs(FRAMES)
 
 W, H = 1920, 1080
-# paleta CLASSICA do Windows PowerShell (console azul-marinho)
-TERM_BG = (1, 36, 86)       # #012456 - azul classico do PowerShell
-DESK = (1, 24, 56)          # borda levemente mais escura
-TITLE_BG = (16, 32, 64)     # barra de titulo
-WHITE = (238, 237, 240)     # texto padrao (cinza claro classico)
-GREY = (170, 180, 200)      # texto secundario (legivel no azul)
-GREEN = (102, 224, 140)     # sucesso
-CYAN = (108, 214, 230)
-BLUE = (140, 190, 255)
-RED = (255, 120, 120)       # erro (vermelho legivel no azul)
-YELLOW = (240, 215, 120)    # aviso
-MAGENTA = (210, 170, 250)
-PROMPT_C = WHITE            # no PowerShell classico o prompt usa a cor padrao
+# paleta do GNOME Terminal do Ubuntu (tema aubergine)
+TERM_BG = (48, 10, 36)      # #300A24 - fundo classico do terminal Ubuntu
+DESK = (30, 6, 22)          # borda
+TITLE_BG = (47, 47, 47)     # headerbar Yaru (cinza escuro)
+WHITE = (235, 235, 235)     # texto padrao
+GREY = (178, 178, 178)      # texto secundario
+GREEN = (115, 210, 90)      # sucesso / verde bash
+CYAN = (52, 226, 226)
+BLUE = (114, 159, 207)      # azul de diretorio do bash
+RED = (239, 85, 85)         # erro
+YELLOW = (233, 205, 90)     # aviso
+MAGENTA = (173, 127, 168)
+UB_GREEN = (138, 226, 52)   # user@host (verde bold do PS1 Ubuntu)
+UB_BLUE = (114, 159, 207)   # diretorio (azul bold do PS1 Ubuntu)
+PROMPT_C = WHITE
 
 def mono(size):
     for p in [r'C:\Windows\Fonts\consola.ttf', r'C:\Windows\Fonts\cour.ttf']:
@@ -39,6 +41,19 @@ def ui(size, bold=False):
 FONT = mono(26)
 LH = 36
 MARGIN_X = 48
+_tmp = Image.new('RGB', (10, 10))
+CW = ImageDraw.Draw(_tmp).textlength('M', font=FONT)  # largura de caractere (monoespacada)
+
+def draw_mono(d, x, y, text, color):
+    """desenha texto monoespacado; '✓' e desenhado a mao (fontes nao tem o glifo)."""
+    for ch in text:
+        if ch in '✓✓':
+            d.line([(x+CW*0.18, y+LH*0.52), (x+CW*0.42, y+LH*0.74), (x+CW*0.86, y+LH*0.26)],
+                   fill=color, width=3, joint='curve')
+        else:
+            d.text((x, y), ch, font=FONT, fill=color)
+        x += CW
+    return x
 TOP = 150          # inicio da area de texto
 TITLEBAR = 64
 CAP_TOP = 902      # inicio da faixa de legenda (narracao escrita)
@@ -72,32 +87,41 @@ def visible_lines():
 def draw_frame(active=None, cursor=True):
     img = Image.new('RGB', (W, H), DESK)
     d = ImageDraw.Draw(img)
-    # janela do terminal
+    # headerbar estilo GNOME Terminal (Yaru)
     d.rectangle([0, 0, W, TITLEBAR], fill=TITLE_BG)
-    # traffic lights / icone
-    d.text((24, 16), 'Windows PowerShell', font=ui(26, True), fill=WHITE)
-    d.text((W-460, 18), 'devsecops-ap2  —  C:\\dev', font=ui(22), fill=GREY)
-    # botoes janela (desenhados)
-    bx = W-150; by = 32
-    d.line([bx, by, bx+18, by], fill=GREY, width=2)                       # minimizar
-    d.rectangle([bx+40, by-9, bx+58, by+9], outline=GREY, width=2)        # maximizar
-    d.line([bx+82, by-9, bx+100, by+9], fill=(220,120,120), width=2)      # fechar X
-    d.line([bx+82, by+9, bx+100, by-9], fill=(220,120,120), width=2)
+    titulo = 'vitor@ubuntu: ~/devsecops-ap2'
+    tf = ui(26)
+    tw = d.textlength(titulo, font=tf)
+    d.text(((W-tw)/2, 16), titulo, font=tf, fill=(220, 220, 220))
+    # botoes GNOME (minimizar, maximizar, fechar) como circulos Yaru
+    cy = TITLEBAR//2
+    for i, cx in enumerate([W-170, W-115, W-60]):
+        col = (60, 60, 60)
+        d.ellipse([cx-18, cy-18, cx+18, cy+18], fill=col)
+    # simbolos
+    d.line([W-179, cy, W-161, cy], fill=(210,210,210), width=2)                 # _
+    d.rectangle([W-124, cy-8, W-106, cy+8], outline=(210,210,210), width=2)     # []
+    d.line([W-69, cy-7, W-51, cy+7], fill=(230,230,230), width=2)               # x
+    d.line([W-69, cy+7, W-51, cy-7], fill=(230,230,230), width=2)
     d.rectangle([0, TITLEBAR, W, H], fill=TERM_BG)
-    # texto
+    # texto (suporta linha de cor unica (texto,cor) ou lista de segmentos [(t,c),...])
     y = TOP
-    for text, color in visible_lines():
-        d.text((MARGIN_X, y), text, font=FONT, fill=color)
+    for entry in visible_lines():
+        if isinstance(entry[0], list):
+            x = MARGIN_X
+            for t, c in entry[0]:
+                x = draw_mono(d, x, y, t, c)
+        else:
+            text, color = entry
+            draw_mono(d, MARGIN_X, y, text, color)
         y += LH
     # linha ativa (digitacao)
     if active is not None:
         segs, partial = active
         x = MARGIN_X
         for t, c in segs:
-            d.text((x, y), t, font=FONT, fill=c)
-            x += d.textlength(t, font=FONT)
-        d.text((x, y), partial, font=FONT, fill=WHITE)
-        x += d.textlength(partial, font=FONT)
+            x = draw_mono(d, x, y, t, c)
+        x = draw_mono(d, x, y, partial, WHITE)
         if cursor:
             d.rectangle([x+2, y+4, x+16, y+LH-6], fill=WHITE)
     # faixa de legenda (narracao escrita)
@@ -122,10 +146,10 @@ def emit(dur, active=None, cursor=True):
     frames.append((name, round(dur, 3)))
     _counter[0] += 1
 
-PROMPT = [('PS C:\\dev\\devsecops-ap2> ', WHITE)]
+PROMPT = [('vitor@ubuntu', UB_GREEN), (':', WHITE), ('~/devsecops-ap2', UB_BLUE), ('$ ', WHITE)]
 
 def type_cmd(cmd, cps=0.07):
-    """digita um comando char a char apos o prompt."""
+    """digita um comando char a char apos o prompt bash."""
     partial = ''
     # breve pausa com prompt vazio + cursor piscando
     emit(0.4, active=(PROMPT, ''), cursor=True)
@@ -133,12 +157,8 @@ def type_cmd(cmd, cps=0.07):
     for ch in cmd:
         partial += ch
         emit(cps, active=(PROMPT, partial), cursor=True)
-    # enter: fixa a linha no buffer
-    line_segs = PROMPT + [(cmd, WHITE)]
-    buf.append((''.join(t for t, _ in line_segs), WHITE))  # placeholder removido abaixo
-    buf.pop()
-    # armazena a linha composta como texto unico colorido (simplificacao: prompt+cmd)
-    buf.append(('PS C:\\dev\\devsecops-ap2> ' + cmd, WHITE))
+    # enter: fixa a linha no buffer como segmentos coloridos (prompt + comando)
+    buf.append((PROMPT + [(cmd, WHITE)],))
     emit(0.25)
 
 def out(lines, per=0.14, read=0.0):
@@ -164,8 +184,10 @@ def blank(n=1):
 # ============================================================
 # ROTEIRO (fluxo de um desenvolvedor)
 # ============================================================
-buf.append(('Windows PowerShell', GREY))
-buf.append(('Copyright (C) Microsoft Corporation. Todos os direitos reservados.', GREY))
+buf.append(('Welcome to Ubuntu 24.04.4 LTS (GNU/Linux 6.8.0 x86_64)', GREY))
+buf.append(('', WHITE))
+buf.append((' * Documentation:  https://help.ubuntu.com', GREY))
+buf.append(('Last login: Sun Oct 19 01:03:58 2026 from 127.0.0.1', GREY))
 buf.append(('', WHITE))
 buf.append(('# AP II DevSecOps - Cenario: empresa ficticia TechSecure Solutions', GREEN))
 buf.append(('# Demonstracao da esteira CI/CD segura (video sem audio)', GREY))
@@ -183,11 +205,11 @@ out([
     ('', WHITE),
     ('PASS test/app.test.js', GREEN),
     ('  TechSecure API', WHITE),
-    ('    √ GET / retorna status online (37 ms)', GREEN),
-    ('    √ GET /health retorna ok (9 ms)', GREEN),
-    ('    √ GET /tarefas retorna uma lista (4 ms)', GREEN),
-    ('    √ POST /tarefas cria uma tarefa valida (9 ms)', GREEN),
-    ('    √ POST /tarefas rejeita payload invalido (3 ms)', GREEN),
+    ('    ✓ GET / retorna status online (37 ms)', GREEN),
+    ('    ✓ GET /health retorna ok (9 ms)', GREEN),
+    ('    ✓ GET /tarefas retorna uma lista (4 ms)', GREEN),
+    ('    ✓ POST /tarefas cria uma tarefa valida (9 ms)', GREEN),
+    ('    ✓ POST /tarefas rejeita payload invalido (3 ms)', GREEN),
     ('', WHITE),
     ('----------|---------|----------|---------|---------|', GREY),
     ('All files |     100 |      100 |     100 |     100 |', GREEN),
@@ -255,33 +277,33 @@ spin = ['|', '/', '-', '\\']
 for k in range(8):
     buf[i1] = (f'  {spin[k%4]} Build e Testes   (executando...)', YELLOW)
     emit(0.35)
-buf[i1] = ('  √ Build e Testes   in 20s', GREEN)
+buf[i1] = ('  ✓ Build e Testes   in 20s', GREEN)
 set_caption('Etapa 1 concluida: build e testes passaram. Agora roda a analise de seguranca.')
 buf[i2] = ('  * Analise de Seguranca   (executando...)', YELLOW)
 emit(0.6)
 for k in range(8):
     buf[i2] = (f'  {spin[k%4]} Analise de Seguranca   (npm audit + Trivy)', YELLOW)
     emit(0.35)
-buf[i2] = ('  √ Analise de Seguranca   in 40s', GREEN)
+buf[i2] = ('  ✓ Analise de Seguranca   in 40s', GREEN)
 set_caption('Etapa 2 concluida: npm audit e Trivy executados. Por fim, build da imagem e deploy.')
 buf[i3] = ('  * Build da Imagem e Deploy   (executando...)', YELLOW)
 emit(0.6)
 for k in range(10):
     buf[i3] = (f'  {spin[k%4]} Build da Imagem e Deploy   (docker build + deploy)', YELLOW)
     emit(0.35)
-buf[i3] = ('  √ Build da Imagem e Deploy   in 42s', GREEN)
+buf[i3] = ('  ✓ Build da Imagem e Deploy   in 42s', GREEN)
 emit(0.6)
 set_caption('Pipeline concluida com sucesso: os 3 estagios passaram do commit ao deploy.')
 out([
     ('', WHITE),
-    ('√ Run CI/CD Seguro - TechSecure completed with "success"', GREEN),
+    ('✓ Run CI/CD Seguro - TechSecure completed with "success"', GREEN),
 ], per=0.3)
 pause(3.2)
 blank()
 
 # 6) ver o achado de seguranca
 set_caption('6. A analise de seguranca encontrou uma vulnerabilidade: braces, severidade HIGH.')
-type_cmd('gh run view --log | Select-String braces')
+type_cmd('gh run view --log | grep braces')
 out([
     ('security-scan  npm audit  # npm audit report', WHITE),
     ('security-scan  npm audit  braces  *', RED),

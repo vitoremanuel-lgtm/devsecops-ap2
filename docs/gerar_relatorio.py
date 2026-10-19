@@ -181,13 +181,31 @@ code(
 
 # ---------- 9. EVIDENCIAS ----------
 h('9. Evidências')
-p('As evidências em imagem devem ser anexadas aqui (prints capturados durante a execução):')
-bullet('[Print] Pipeline executando no GitHub Actions (jobs verdes)')
-bullet('[Print] Resultado do build e dos testes')
-bullet('[Print] Resultado do security scan (npm audit / Trivy)')
-bullet('[Print] Build da imagem Docker')
-bullet('[Print] Container em execução (docker ps)')
-bullet('[Print] Aplicação funcionando no navegador / curl')
+p('Evidências capturadas da execução real da pipeline no GitHub Actions '
+  '(run 39183655918 — repositório vitoremanuel-lgtm/devsecops-ap2):')
+
+import os as _os
+from docx.shared import Inches
+EVID = r'C:\dev\devsecops-ap2\docs\evidencias'
+evidencias = [
+    ('01_pipeline_geral.png',    'Figura 1 — Pipeline executada com sucesso (3 jobs verdes).'),
+    ('02_build_testes.png',      'Figura 2 — Build e testes automatizados (5/5, 100% cobertura).'),
+    ('03_security_npm_audit.png','Figura 3 — Security scan: npm audit (achado braces HIGH).'),
+    ('04_security_trivy_fs.png', 'Figura 4 — Security scan: Trivy no filesystem.'),
+    ('05_docker_build.png',      'Figura 5 — Build da imagem Docker.'),
+    ('06_trivy_imagem.png',      'Figura 6 — Trivy escaneando a imagem Docker.'),
+    ('07_deploy_container.png',  'Figura 7 — Deploy automático: container em execução (docker ps).'),
+    ('08_app_funcionando.png',   'Figura 8 — Aplicação funcionando (smoke test /health = 200).'),
+]
+for arq, legenda in evidencias:
+    caminho = _os.path.join(EVID, arq)
+    if _os.path.exists(caminho):
+        doc.add_picture(caminho, width=Inches(6.0))
+        cap = doc.add_paragraph()
+        cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        rc = cap.add_run(legenda)
+        rc.italic = True
+        rc.font.size = Pt(9)
 
 # ---------- 10. DIFICULDADES ----------
 h('10. Dificuldades Encontradas')
